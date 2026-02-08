@@ -48,7 +48,7 @@ Thumbs.db
 # Logs
 *.log
 
-# Environment
-.env
-.env.local
-.env.*.local
+# Environment (now tracked in git for deployment)
+# .env
+# .env.local
+# .env.*.local
