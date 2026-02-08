@@ -2,17 +2,7 @@
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "/main.py"
+      "destination": "/api/index"
     }
-  ],
-  "functions": {
-    "main.py": {
-      "maxDuration": 60,
-      "memory": 1024
-    }
-  },
-  "env": {
-    "GEMINI_API_KEY": "AIzaSyBsN9IJpwB-oFsM4oX84PNVxd7X4ekHghM",
-    "GEMINI_MODEL": "gemini-1.5-flash"
-  }
+  ]
 }
