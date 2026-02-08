@@ -3,7 +3,11 @@
   "builds": [
     {
       "src": "main.py",
-      "use": "@vercel/python"
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "15mb",
+        "runtime": "python3.11"
+      }
     }
   ],
   "routes": [
@@ -12,6 +16,12 @@
       "dest": "main.py"
     }
   ],
+  "functions": {
+    "main.py": {
+      "maxDuration": 60,
+      "memory": 1024
+    }
+  },
   "env": {
     "GEMINI_API_KEY": "AIzaSyBsN9IJpwB-oFsM4oX84PNVxd7X4ekHghM",
     "GEMINI_MODEL": "gemini-1.5-flash"

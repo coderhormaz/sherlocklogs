@@ -1,10 +1,10 @@
 fastapi>=0.95.0
 uvicorn[standard]
-gunicorn
 python-multipart
 aiofiles
 python-dateutil
-sentence-transformers
-faiss-cpu
 httpx
 python-dotenv
+# Optional ML dependencies (may cause OOM on Vercel free tier)
+# sentence-transformers
+# faiss-cpu

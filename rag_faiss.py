@@ -1,7 +1,16 @@
 import os
-from sentence_transformers import SentenceTransformer
 import pickle
-import numpy as np
+try:
+    from sentence_transformers import SentenceTransformer
+    import numpy as np
+    HAS_TRANSFORMERS = True
+except ImportError:
+    HAS_TRANSFORMERS = False
+    SentenceTransformer = None
+    try:
+        import numpy as np
+    except ImportError:
+        np = None
 
 try:
     import faiss
@@ -13,11 +22,32 @@ MODEL_NAME = 'all-MiniLM-L6-v2'
 
 
 def _ensure_model():
+    if not HAS_TRANSFORMERS:
+        return None
     return SentenceTransformer(MODEL_NAME)
 
 
 def build_playbook_index(playbook_path, index_path=None):
+    if not HAS_TRANSFORMERS:
+        # Return simple doc structure without embeddings
+        try:
+            with open(playbook_path, 'r', encoding='utf-8') as f:
+                text = f.read()
+            parts = [p.strip() for p in text.split('##') if p.strip()]
+            docs = []
+            for p in parts:
+                lines = p.splitlines()
+                title = lines[0].strip()
+                content = '\n'.join(lines[1:]).strip()
+                docs.append({'title': title, 'content': content})
+            return {'docs': docs, 'has_faiss': False, 'has_transformers': False}
+        except Exception:
+            return None
+    
     model = _ensure_model()
+    if model is None:
+        return None
+        
     with open(playbook_path, 'r', encoding='utf-8') as f:
         text = f.read()
 
@@ -77,7 +107,16 @@ def load_playbook_index(path_or_index):
 def query_playbook(index_data, query, top_k=3):
     if not index_data:
         return []
+    
+    # If no transformers, return first few docs as fallback
+    if not HAS_TRANSFORMERS or not index_data.get('has_transformers', True):
+        docs = index_data.get('docs', [])
+        return docs[:top_k] if docs else []
+    
     model = _ensure_model()
+    if model is None:
+        return []
+        
     q_emb = model.encode([query], convert_to_numpy=True)
 
     if index_data.get('has_faiss'):

@@ -5,7 +5,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from parser import parse_log, analyze_findings
-from rag_faiss import load_playbook_index, query_playbook
+try:
+    from rag_faiss import load_playbook_index, query_playbook
+    HAS_RAG = True
+except ImportError:
+    HAS_RAG = False
+    def load_playbook_index(*args, **kwargs):
+        return None
+    def query_playbook(*args, **kwargs):
+        return []
 from gemini_client import generate_narrative
 from db import init_db, save_analysis, get_all_analyses, get_analysis_by_id
 import shutil
@@ -25,7 +33,7 @@ app = FastAPI(title="SherlockLogs API", description="AI-powered Security Log Ana
 
 # Get allowed origins from environment for production deployments
 ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', 
-    'http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001'
+    'http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001,https://log-to-story.vercel.app'
 ).split(',')
 
 # Allow frontend (Next.js) to call this API - supports both local and production URLs
