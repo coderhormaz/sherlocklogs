@@ -16,7 +16,9 @@ import re
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(APP_ROOT, '.env'))
 
-UPLOAD_DIR = os.path.join(APP_ROOT, 'uploads')
+# Use /tmp for uploads on Vercel serverless environment
+IS_VERCEL = os.getenv('VERCEL', False)
+UPLOAD_DIR = '/tmp/uploads' if IS_VERCEL else os.path.join(APP_ROOT, 'uploads')
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 app = FastAPI(title="SherlockLogs API", description="AI-powered Security Log Analysis")
@@ -35,7 +37,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-init_db(os.path.join(APP_ROOT, 'data.db'))
+# Use /tmp for database on Vercel serverless environment
+DB_PATH = '/tmp/data.db' if IS_VERCEL else os.path.join(APP_ROOT, 'data.db')
+init_db(DB_PATH)
 
 
 def build_narrative_story(parsed, formatted_events, pattern_findings):
@@ -255,6 +259,9 @@ async def get_history_item(analysis_id: int):
         analysis['recs'] = []
     return analysis
 
+
+# Vercel serverless handler
+handler = app
 
 if __name__ == '__main__':
     import uvicorn
